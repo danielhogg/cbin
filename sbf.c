@@ -75,6 +75,10 @@ float read_sbf(char * file_path){
     float ** sbf_array = malloc(sizeof(float *) * x_dim);
 
     for (i = 0; i < x_dim; i++){
+        sbf_array[i] = malloc(sizeof(float) * y_dim);
+    }
+
+    for (i = 0; i < x_dim; i++){
         fread(sbf_array[i], sizeof(float), y_dim, p_file);
     }
 

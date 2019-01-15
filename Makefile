@@ -1,7 +1,10 @@
 CC=gcc
-CFLAGS=-I.
+CFLAGS=-I. -g
 
-all: generate_sample process_sample
+all: clean generate_sample process_sample
+
+clean:
+	rm generate_sample process_sample
 
 generate_sample: generate_sample.c
 	$(CC) $(CFLAGS) -o generate_sample sbf.c generate_sample.c
