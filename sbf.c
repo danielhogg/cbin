@@ -13,87 +13,93 @@ float float_rand( float min, float max )
     return min + scale * ( max - min );
 }
 
-void write_sbf(char * file_path, struct SbfHeader * header, int seed){
-	FILE * p_file;
-	p_file = fopen(file_path, "w+");
+void write_sbf(char * file_path, int x_dim, int y_dim, int seed){
+    FILE * p_file;
+    p_file = fopen(file_path, "w");
 
-	int header_size = 12;
-	fwrite(header, header_size, 1, p_file);
+    int file_version = 1;
 
-	srand(seed);
+    fwrite(&file_version, sizeof(int), 1, p_file);
+    fwrite(&x_dim, sizeof(int), 1, p_file);
+    fwrite(&y_dim, sizeof(int), 1, p_file);
 
-	int x_dim = header->x_dim;
-	int y_dim = header->y_dim;
-	int min_temp = 18.3;
-	int max_temp = 27.5;
+    srand(seed);
 
-	printf("x_dim: %d, y_dim: %d\n", x_dim, y_dim);
+    int min_temp = 18.3;
+    int max_temp = 27.5;
 
-	float ** sbf_array = malloc(sizeof(float *) * x_dim);
-	int i, j;
-	for (i = 0; i < x_dim; i++){
-		sbf_array[i] = malloc(sizeof(float) * y_dim);
-	}
+    printf("x_dim: %d, y_dim: %d\n", x_dim, y_dim);
 
-	for (i = 0; i < x_dim; i++){
-		for (j = 0; j < y_dim; j++){
-			sbf_array[i][j] = float_rand(min_temp, max_temp);
-		}
-	}
+    float ** sbf_array = malloc(sizeof(float *) * x_dim);
+    int i, j;
+    for (i = 0; i < x_dim; i++){
+        sbf_array[i] = malloc(sizeof(float) * y_dim);
+    }
 
-	for (i = 0; i < x_dim; i++){
-		fwrite(sbf_array[i], sizeof(float), y_dim, p_file);
-	}
+    for (i = 0; i < x_dim; i++){
+        for (j = 0; j < y_dim; j++){
+            sbf_array[i][j] = float_rand(min_temp, max_temp);
+        }
+    }
 
-	for (i = 0; i < x_dim; i++){
-		free(sbf_array[i]);
-	}
-	free(sbf_array);
+    for (i = 0; i < x_dim; i++){
+        fwrite(sbf_array[i], sizeof(float), y_dim, p_file);
+    }
 
-	fclose(p_file);
+    for (i = 0; i < x_dim; i++){
+        free(sbf_array[i]);
+    }
+    free(sbf_array);
+
+    fclose(p_file);
 }
 
 float read_sbf(char * file_path){
-	FILE * p_file;
-	p_file = fopen(file_path, "w+");
-	struct SbfHeader header;
+    FILE * p_file;
+    p_file = fopen(file_path, "r");
 
-	int header_size = 12;
-	fread(&header, header_size, 1, p_file);
-	int x_dim = header.x_dim;
-	int y_dim = header.y_dim;
+    int x_dim;
+    int y_dim;
+    int file_version;
 
-	printf("File header read - x_dim: %d, y_dim: %d\n", x_dim, y_dim);
+    fread(&file_version, sizeof(int), 1, p_file);
+    fread(&x_dim, sizeof(int), 1, p_file);
+    fread(&y_dim, sizeof(int), 1, p_file);
 
-	int i, j;
+    printf("File version: %d\n", file_version);
+    printf("File header read - x_dim: %d, y_dim: %d\n", x_dim, y_dim);
 
-	float * row_mean = malloc(sizeof(float) * x_dim);
-	float ** sbf_array = malloc(sizeof(float *) * x_dim);
+    int i, j;
 
-	for (i = 0; i < x_dim; i++){
-		fread(sbf_array[i], sizeof(float), y_dim, p_file);
-	}
+    float * row_mean = malloc(sizeof(float) * x_dim);
+    float ** sbf_array = malloc(sizeof(float *) * x_dim);
 
-	for (i = 0; i < x_dim; i++){
-		float tmp_total = 0;
+    for (i = 0; i < x_dim; i++){
+        fread(sbf_array[i], sizeof(float), y_dim, p_file);
+    }
+
+    for (i = 0; i < x_dim; i++){
+        float tmp_total = 0;
         for (j = 0; j < y_dim; j++){
-			tmp_total += sbf_array[i][j];
-		}
-		row_mean[i] = tmp_total / (float)y_dim;
-	}
+            tmp_total += sbf_array[i][j];
+        }
+        row_mean[i] = tmp_total / (float)y_dim;
+    }
 
-	for (i = 0; i < x_dim; i++){
-		free(sbf_array[i]);
-	}
-	free(sbf_array);
+    for (i = 0; i < x_dim; i++){
+        free(sbf_array[i]);
+    }
+    free(sbf_array);
 
-	float total = 0;
-	for (i = 0; i < x_dim; i++){
-		total += row_mean[i];
-	}
+    float total = 0;
+    for (i = 0; i < x_dim; i++){
+        total += row_mean[i];
+    }
 
-	free(row_mean);
+    free(row_mean);
 
-	float sbf_mean = total / (float)x_dim;
-	return sbf_mean;
+    fclose(p_file);
+
+    float sbf_mean = total / (float)x_dim;
+    return sbf_mean;
 }
