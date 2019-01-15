@@ -7,4 +7,4 @@ struct SbfHeader {
 };
 
 void write_sbf(char * file_path, struct SbfHeader * header, int seed);
-float ** read_sbf(char * file_path, int * x_dim, int * y_dim);
+float read_sbf(char * file_path);
