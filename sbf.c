@@ -15,7 +15,7 @@ float float_rand( float min, float max )
 
 void write_sbf(char * file_path, int x_dim, int y_dim, int seed){
     FILE * p_file;
-    p_file = fopen(file_path, "w");
+    p_file = fopen(file_path, "wb");
 
     int file_version = 1;
 
